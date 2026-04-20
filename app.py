@@ -400,11 +400,13 @@ def extract_glcm_features(img_gray):
 def extract_lbp_features(img_gray, radius=1, n_points=8):
     feats = {}
     lbp    = local_binary_pattern(img_gray, n_points, radius, method='uniform')
-    # uniform LBP: use fixed n_points+2 bins, manually normalize to avoid
-    # numpy density=True broadcast bug in newer numpy versions
+    # Use bincount instead of histogram — avoids NumPy 2.x broadcast bug entirely
+    # uniform LBP has exactly n_points+2 unique integer values
     n_bins = n_points + 2
-    counts, _ = np.histogram(lbp.ravel(), bins=n_bins, range=(0, n_bins))
-    hist = counts.astype(float) / (counts.sum() + 1e-12)
+    lbp_int = lbp.ravel().astype(np.int32)
+    lbp_int = np.clip(lbp_int, 0, n_bins - 1)
+    counts  = np.bincount(lbp_int, minlength=n_bins).astype(float)
+    hist    = counts / (counts.sum() + 1e-12)
     for i, val in enumerate(hist):
         feats[f'lbp_hist_{i}'] = float(val)
     feats['lbp_mean'] = float(np.mean(lbp))
