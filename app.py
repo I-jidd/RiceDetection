@@ -392,8 +392,9 @@ def extract_glcm_features(img_gray):
 
 def extract_lbp_features(img_gray, radius=1, n_points=8):
     feats = {}
-    lbp   = local_binary_pattern(img_gray, n_points, radius, method='uniform')
-    n_bins = int(lbp.max() + 1)
+    lbp    = local_binary_pattern(img_gray, n_points, radius, method='uniform')
+    # uniform LBP has n_points+2 possible values (0..n_points+1)
+    n_bins = n_points + 2
     hist, _ = np.histogram(lbp.ravel(), bins=n_bins, range=(0, n_bins), density=True)
     for i, val in enumerate(hist):
         feats[f'lbp_hist_{i}'] = float(val)
@@ -627,7 +628,7 @@ if "nav_page" not in st.session_state:
 for _col, _page in zip(_cols, _pages):
     with _col:
         _active = "primary" if st.session_state.nav_page == _page else "secondary"
-        if st.button(_page, key=f"topnav_{_page}", use_container_width=True,
+        if st.button(_page, key=f"topnav_{_page}", width="stretch",
                      type="primary" if st.session_state.nav_page == _page else "secondary"):
             st.session_state.nav_page = _page
             st.rerun()
@@ -746,7 +747,7 @@ if selected == "🏠 Home":
 
         # CTA button → navigate to Classifier
         st.markdown("<br>", unsafe_allow_html=True)
-        if st.button("🚀 Start Classifying", use_container_width=True):
+        if st.button("🚀 Start Classifying", width="stretch"):
             # Streamlit can't directly mutate option_menu, but we can signal intent
             st.info("👈 Click **🔬 Classifier** in the sidebar to upload your leaf image!", icon="💡")
 
@@ -817,13 +818,13 @@ elif selected == "🔬 Classifier":
             if img_rgb is None:
                 st.error("❌ Could not decode image. Please try a valid JPG/PNG file.")
             else:
-                st.image(img_rgb, caption="Preview — 256 × 256 px", use_container_width=True)
+                st.image(img_rgb, caption="Preview — 256 × 256 px", width="stretch")
 
                 btn_col1, btn_col2 = st.columns(2)
                 with btn_col1:
-                    run_predict = st.button("🔍 Predict Disease", type="primary", use_container_width=True)
+                    run_predict = st.button("🔍 Predict Disease", type="primary", width="stretch")
                 with btn_col2:
-                    if st.button("🧹 Clear", use_container_width=True):
+                    if st.button("🧹 Clear", width="stretch"):
                         st.session_state.current_prediction = None
                         st.rerun()
 
@@ -930,7 +931,7 @@ elif selected == "🔬 Classifier":
                 yaxis=dict(tickfont=dict(color="#e2e8f0", size=12)),
                 font=dict(family="Inter"),
             )
-            st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
+            st.plotly_chart(fig, width="stretch", config={"displayModeBar": False})
 
             # Timestamp
             st.caption(f"🕐 Analysed at {pred['timestamp']}")
@@ -943,7 +944,7 @@ elif selected == "🔬 Classifier":
                 data=img_buf,
                 file_name=fname,
                 mime="image/png",
-                use_container_width=True,
+                width="stretch",
             )
 
         else:
@@ -1015,7 +1016,7 @@ elif selected == "📜 History":
                 showlegend=True,
                 legend=dict(font=dict(color="#94a3b8", size=11), bgcolor="rgba(0,0,0,0)"),
             )
-            st.plotly_chart(fig_pie, use_container_width=True, config={"displayModeBar": False})
+            st.plotly_chart(fig_pie, width="stretch", config={"displayModeBar": False})
 
         with table_col:
             df_hist = pd.DataFrame([
@@ -1027,7 +1028,7 @@ elif selected == "📜 History":
             ])
             st.dataframe(
                 df_hist,
-                use_container_width=True,
+                width="stretch",
                 hide_index=True,
                 column_config={
                     "Confidence (%)": st.column_config.ProgressColumn(
@@ -1062,7 +1063,7 @@ elif selected == "📜 History":
             """, unsafe_allow_html=True)
 
         st.markdown("<br>", unsafe_allow_html=True)
-        if st.button("🗑️ Clear All History", use_container_width=False):
+        if st.button("🗑️ Clear All History", width="content"):
             st.session_state.history = []
             st.session_state.current_prediction = None
             st.success("History cleared successfully.")
