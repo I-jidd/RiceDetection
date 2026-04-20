@@ -1,3 +1,10 @@
+"""
+╔══════════════════════════════════════════════════════════════════╗
+║         🌾 Rice Leaf Disease Classifier — Enhanced App          ║
+║   Stack: Streamlit · Plotly · OpenCV · Pillow · Lottie · SKLearn ║
+╚══════════════════════════════════════════════════════════════════╝
+"""
+
 import streamlit as st
 import cv2
 import numpy as np
@@ -393,9 +400,11 @@ def extract_glcm_features(img_gray):
 def extract_lbp_features(img_gray, radius=1, n_points=8):
     feats = {}
     lbp    = local_binary_pattern(img_gray, n_points, radius, method='uniform')
-    # uniform LBP has n_points+2 possible values (0..n_points+1)
+    # uniform LBP: use fixed n_points+2 bins, manually normalize to avoid
+    # numpy density=True broadcast bug in newer numpy versions
     n_bins = n_points + 2
-    hist, _ = np.histogram(lbp.ravel(), bins=n_bins, range=(0, n_bins), density=True)
+    counts, _ = np.histogram(lbp.ravel(), bins=n_bins, range=(0, n_bins))
+    hist = counts.astype(float) / (counts.sum() + 1e-12)
     for i, val in enumerate(hist):
         feats[f'lbp_hist_{i}'] = float(val)
     feats['lbp_mean'] = float(np.mean(lbp))
